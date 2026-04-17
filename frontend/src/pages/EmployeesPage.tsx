@@ -3,6 +3,7 @@ import { Plus, Search, Edit2, Trash2, Lock, Unlock, Filter, UserX, Eye } from 'l
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { useLang } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 
 interface Employee {
   id: number; firstName: string; lastName: string; email: string;
@@ -22,6 +23,7 @@ const initForm = { firstName: '', lastName: '', email: '', phone: '', position: 
 
 const EmployeesPage: React.FC = () => {
   const { t } = useLang();
+  const { user } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
@@ -195,17 +197,21 @@ const EmployeesPage: React.FC = () => {
                           onClick={() => openEdit(emp)}>
                           <Edit2 size={14} />
                         </button>
-                        <button className="btn btn-ghost btn-icon btn-sm"
-                          title={emp.status === 'blocked' ? 'Unblock' : 'Block'}
-                          onClick={() => toggleBlock(emp)}
-                          style={{ color: emp.status === 'blocked' ? 'var(--teal)' : 'var(--amber)' }}>
-                          {emp.status === 'blocked' ? <Unlock size={14} /> : <Lock size={14} />}
-                        </button>
-                        <button className="btn btn-ghost btn-icon btn-sm" title={t('deleteEmp')}
-                          onClick={() => { setSelected(emp); setModal('delete'); }}
-                          style={{ color: 'var(--red)' }}>
-                          <Trash2 size={14} />
-                        </button>
+                        {user?.role === 'admin' && (
+                          <>
+                            <button className="btn btn-ghost btn-icon btn-sm"
+                              title={emp.status === 'blocked' ? 'Unblock' : 'Block'}
+                              onClick={() => toggleBlock(emp)}
+                              style={{ color: emp.status === 'blocked' ? 'var(--teal)' : 'var(--amber)' }}>
+                              {emp.status === 'blocked' ? <Unlock size={14} /> : <Lock size={14} />}
+                            </button>
+                            <button className="btn btn-ghost btn-icon btn-sm" title={t('deleteEmp')}
+                              onClick={() => { setSelected(emp); setModal('delete'); }}
+                              style={{ color: 'var(--red)' }}>
+                              <Trash2 size={14} />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Building2 } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { useLang } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 
 interface Dept { id: number; name: string; description: string; }
 
@@ -10,6 +11,7 @@ const deptColors = ['#6c5ce7', '#10b981', '#e84393', '#3b82f6', '#f59e0b', '#ef4
 
 const DepartmentsPage: React.FC = () => {
   const { t } = useLang();
+  const { user } = useAuth();
   const [depts, setDepts] = useState<Dept[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<'add' | 'edit' | 'delete' | null>(null);
@@ -50,9 +52,11 @@ const DepartmentsPage: React.FC = () => {
             {depts.length} {t('deptsConfigured')}
           </p>
         </div>
-        <button className="btn btn-primary" onClick={() => { setForm({ name: '', description: '' }); setModal('add'); }}>
-          <Plus size={16} />{t('addDept')}
-        </button>
+        {user?.role === 'admin' && (
+          <button className="btn btn-primary" onClick={() => { setForm({ name: '', description: '' }); setModal('add'); }}>
+            <Plus size={16} />{t('addDept')}
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -74,17 +78,19 @@ const DepartmentsPage: React.FC = () => {
                 }}>
                   <Building2 size={22} color="#fff" />
                 </div>
-                <div className="action-btns">
-                  <button className="btn btn-ghost btn-icon btn-sm" title={t('editDept')}
-                    onClick={() => { setSelected(dept); setForm({ name: dept.name, description: dept.description }); setModal('edit'); }}>
-                    <Edit2 size={13} />
-                  </button>
-                  <button className="btn btn-ghost btn-icon btn-sm" title={t('deleteDept')}
-                    style={{ color: 'var(--red)' }}
-                    onClick={() => { setSelected(dept); setModal('delete'); }}>
-                    <Trash2 size={13} />
-                  </button>
-                </div>
+                {user?.role === 'admin' && (
+                  <div className="action-btns">
+                    <button className="btn btn-ghost btn-icon btn-sm" title={t('editDept')}
+                      onClick={() => { setSelected(dept); setForm({ name: dept.name, description: dept.description }); setModal('edit'); }}>
+                      <Edit2 size={13} />
+                    </button>
+                    <button className="btn btn-ghost btn-icon btn-sm" title={t('deleteDept')}
+                      style={{ color: 'var(--red)' }}
+                      onClick={() => { setSelected(dept); setModal('delete'); }}>
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                )}
               </div>
               <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '6px' }}>{dept.name}</div>
               <div style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
