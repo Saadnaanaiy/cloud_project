@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: employee_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword # Change this in production
+      MYSQL_DATABASE: employee_db
+    ports:
+      - '3306:3306'
+    volumes:
+      - db_data:/var/lib/mysql
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: employee_backend
+    restart: always
+    ports:
+      - '3001:3001'
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USERNAME=root
+      - DB_PASSWORD=rootpassword
+      - DB_NAME=employee_db
+      - JWT_SECRET=super_secret_jwt_key
+      - JWT_EXPIRES_IN=7d
+      - PORT=3001
+      - FRONTEND_URL=http://localhost:5173
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: employee_frontend
+    restart: always
+    ports:
+      - '5173:80' # Expose container port 80 to host port 5173
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
