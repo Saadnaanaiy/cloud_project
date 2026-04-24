@@ -30,12 +30,12 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', background: 'var(--bg-main)' }}>
+    <div className="auth-container">
       {/* Subtle background glow — theme-aware opacity */}
-      <div style={{ position: 'fixed', top: '-20%', right: '-10%', width: '600px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(108,92,231,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'fixed', bottom: '-20%', left: '-10%', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <div className="auth-glow-1" />
+      <div className="auth-glow-2" />
 
-      <div style={{ width: '100%', maxWidth: '440px', animation: 'slideUp 0.5s ease' }}>
+      <div style={{ width: '100%', maxWidth: '440px' }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div style={{
@@ -52,15 +52,14 @@ const LoginPage: React.FC = () => {
         </div>
 
         {/* Card */}
-        <div className="glass-card" style={{ padding: '36px' }}>
+        <div className="auth-card" style={{ padding: '40px' }}>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div className="form-group">
               <label className="form-label">{t('emailLabel')}</label>
               <div style={{ position: 'relative' }}>
                 <Mail size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input type="email" className="form-control" value={email}
+                <input type="email" className="form-control auth-input" value={email}
                   onChange={e => setEmail(e.target.value)}
-                  style={{ paddingLeft: '40px' }}
                   placeholder="admin@company.com" required />
               </div>
             </div>
@@ -69,9 +68,9 @@ const LoginPage: React.FC = () => {
               <label className="form-label">{t('passwordLabel')}</label>
               <div style={{ position: 'relative' }}>
                 <Lock size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input type={showPass ? 'text' : 'password'} className="form-control"
+                <input type={showPass ? 'text' : 'password'} className="form-control auth-input"
                   value={password} onChange={e => setPassword(e.target.value)}
-                  style={{ paddingLeft: '40px', paddingRight: '44px' }}
+                  style={{ paddingRight: '44px' }}
                   placeholder="••••••••" required />
                 <button type="button" onClick={() => setShowPass(!showPass)}
                   style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
@@ -80,8 +79,8 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
 
-            <button type="submit" className="btn btn-primary" disabled={loading}
-              style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '15px', marginTop: '4px' }}>
+            <button type="submit" className="btn btn-primary auth-btn" disabled={loading}
+              style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}>
               {loading
                 ? <><div className="spinner" style={{ width: '18px', height: '18px', borderTopColor: 'var(--brand-text)' }} /> {t('signingIn')}</>
                 : t('signIn')}

@@ -19,7 +19,7 @@ interface ProfileData {
 }
 
 const ProfilePage: React.FC = () => {
-  const { user, refreshUser } = useAuth();
+  const { refreshUser } = useAuth();
   const { t } = useLang();
 
   const [profile, setProfile] = useState<ProfileData | null>(null);

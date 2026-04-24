@@ -57,11 +57,11 @@ const SignupPage: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', background: 'var(--bg-main)' }}>
-      <div style={{ position: 'fixed', top: '-20%', right: '-10%', width: '600px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(108,92,231,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'fixed', bottom: '-20%', left: '-10%', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+    <div className="auth-container">
+      <div className="auth-glow-1" />
+      <div className="auth-glow-2" />
 
-      <div style={{ width: '100%', maxWidth: '480px', animation: 'slideUp 0.5s ease' }}>
+      <div style={{ width: '100%', maxWidth: '480px' }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
           <div style={{ width: '72px', height: '72px', borderRadius: '16px', background: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', boxShadow: 'var(--shadow-md)' }}>
@@ -72,15 +72,15 @@ const SignupPage: React.FC = () => {
         </div>
 
         {/* Card */}
-        <div className="glass-card" style={{ padding: '36px' }}>
+        <div className="auth-card" style={{ padding: '40px' }}>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
             {/* Name */}
             <Field id="name" label="Full Name" error={errors.name}>
               <div style={{ position: 'relative' }}>
                 <User size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input id="name" type="text" className="form-control"
+                <input id="name" type="text" className="form-control auth-input"
                   value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                  style={{ paddingLeft: '40px', borderColor: errors.name ? 'var(--red)' : undefined }}
+                  style={{ borderColor: errors.name ? 'var(--red)' : undefined }}
                   placeholder="John Doe" />
               </div>
             </Field>
@@ -89,9 +89,9 @@ const SignupPage: React.FC = () => {
             <Field id="email" label={t('emailLabel')} error={errors.email}>
               <div style={{ position: 'relative' }}>
                 <Mail size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input id="email" type="email" className="form-control"
+                <input id="email" type="email" className="form-control auth-input"
                   value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
-                  style={{ paddingLeft: '40px', borderColor: errors.email ? 'var(--red)' : undefined }}
+                  style={{ borderColor: errors.email ? 'var(--red)' : undefined }}
                   placeholder="john@company.com" />
               </div>
             </Field>
@@ -100,9 +100,9 @@ const SignupPage: React.FC = () => {
             <div className="form-group">
               <label className="form-label" htmlFor="role">Role</label>
               <div style={{ position: 'relative' }}>
-                <select id="role" className="form-control"
+                <select id="role" className="form-control auth-input"
                   value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}
-                  style={{ paddingRight: '36px', appearance: 'none' }}>
+                  style={{ paddingRight: '36px', appearance: 'none', paddingLeft: '14px' }}>
                   {roleOptions.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                 </select>
                 <ChevronDown size={15} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
@@ -113,9 +113,9 @@ const SignupPage: React.FC = () => {
             <Field id="password" label={t('passwordLabel')} error={errors.password}>
               <div style={{ position: 'relative' }}>
                 <Lock size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input id="password" type={showPass ? 'text' : 'password'} className="form-control"
+                <input id="password" type={showPass ? 'text' : 'password'} className="form-control auth-input"
                   value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
-                  style={{ paddingLeft: '40px', paddingRight: '44px', borderColor: errors.password ? 'var(--red)' : undefined }}
+                  style={{ paddingRight: '44px', borderColor: errors.password ? 'var(--red)' : undefined }}
                   placeholder="Min. 6 characters" />
                 <button type="button" onClick={() => setShowPass(!showPass)}
                   style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
@@ -128,9 +128,9 @@ const SignupPage: React.FC = () => {
             <Field id="confirmPassword" label="Confirm Password" error={errors.confirmPassword}>
               <div style={{ position: 'relative' }}>
                 <Lock size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input id="confirmPassword" type={showConfirm ? 'text' : 'password'} className="form-control"
+                <input id="confirmPassword" type={showConfirm ? 'text' : 'password'} className="form-control auth-input"
                   value={form.confirmPassword} onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
-                  style={{ paddingLeft: '40px', paddingRight: '44px', borderColor: errors.confirmPassword ? 'var(--red)' : undefined }}
+                  style={{ paddingRight: '44px', borderColor: errors.confirmPassword ? 'var(--red)' : undefined }}
                   placeholder="Repeat password" />
                 <button type="button" onClick={() => setShowConfirm(!showConfirm)}
                   style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
@@ -139,8 +139,8 @@ const SignupPage: React.FC = () => {
               </div>
             </Field>
 
-            <button type="submit" className="btn btn-primary" disabled={loading}
-              style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '15px', marginTop: '4px' }}>
+            <button type="submit" className="btn btn-primary auth-btn" disabled={loading}
+              style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}>
               {loading
                 ? <><div className="spinner" style={{ width: '18px', height: '18px', borderTopColor: 'var(--brand-text)' }} /> Creating account...</>
                 : 'Create Account'}

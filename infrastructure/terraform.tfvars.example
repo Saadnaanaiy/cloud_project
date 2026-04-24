@@ -1,0 +1,13 @@
+project_id             = "your-gcp-project-id"
+region                 = "europe-west1"
+zone                   = "europe-west1-b"
+environment            = "dev"
+vpc_name               = "cloud-native-vpc"
+subnet_name            = "gke-private-subnet"
+subnet_cidr            = "10.10.0.0/20"
+pods_secondary_cidr    = "10.20.0.0/16"
+services_secondary_cidr = "10.30.0.0/20"
+artifact_registry_repo = "employee-platform"
+gke_cluster_name       = "employee-gke"
+gke_node_count         = 1
+gke_machine_type       = "e2-standard-2"

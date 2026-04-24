@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLang } from '../context/LanguageContext';
-import { Bell, Sun, Moon, Globe, User, LogOut, Settings, Menu } from 'lucide-react';
+import { Bell, Sun, Moon, User, LogOut, Settings, Menu } from 'lucide-react';
 
 const Topbar: React.FC<{ title: string, setMobileMenuOpen: (open: boolean) => void }> = ({ title, setMobileMenuOpen }) => {
   const { user, logout } = useAuth();

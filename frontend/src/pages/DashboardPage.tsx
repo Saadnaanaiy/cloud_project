@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Users, UserCheck, UserX, Clock, FileDown, FileSpreadsheet, TrendingUp, Building2 } from 'lucide-react';
 import { useLang } from '../context/LanguageContext';
 import api from '../api/axios';
