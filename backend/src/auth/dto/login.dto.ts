@@ -10,4 +10,9 @@ export class LoginDto {
   @IsNotEmpty()
   @IsString()
   password: string;
+
+  @ApiProperty({ example: 'long-captcha-token' })
+  @IsNotEmpty({ message: 'Please complete the CAPTCHA' })
+  @IsString()
+  captchaToken: string;
 }

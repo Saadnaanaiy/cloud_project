@@ -12,9 +12,12 @@ RUN npm ci
 # Copy the rest of the application
 COPY . .
 
-# Accept API URL as a build argument
+# Accept build arguments for environment variables baked into the static build
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
+
+ARG VITE_RECAPTCHA_SITE_KEY
+ENV VITE_RECAPTCHA_SITE_KEY=$VITE_RECAPTCHA_SITE_KEY
 
 # Build the app for production
 RUN npm run build
@@ -25,8 +28,8 @@ FROM nginx:alpine
 # Copy the built files from the previous stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy custom Nginx configuration if needed (optional)
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Use custom Nginx config for SPA route fallback
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80

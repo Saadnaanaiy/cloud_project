@@ -5,6 +5,9 @@ resource "google_container_cluster" "main" {
   network    = google_compute_network.main.id
   subnetwork = google_compute_subnetwork.gke.id
 
+  # Allow terraform destroy in dev — set to true for production
+  deletion_protection = var.environment == "prod" ? true : false
+
   remove_default_node_pool = true
   initial_node_count       = 1
 

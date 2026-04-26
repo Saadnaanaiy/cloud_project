@@ -5,7 +5,7 @@ interface User { id: number; name: string; email: string; role: string; }
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, captchaToken: string) => Promise<void>;
   register: (name: string, email: string, password: string, role?: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
@@ -31,8 +31,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsInitializing(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
-    const { data } = await api.post('/auth/login', { email, password });
+  const login = async (email: string, password: string, captchaToken: string) => {
+    const { data } = await api.post('/auth/login', { email, password, captchaToken });
     localStorage.setItem('token', data.access_token);
     localStorage.setItem('user', JSON.stringify(data.user));
     api.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;

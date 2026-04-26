@@ -4,6 +4,7 @@ import {
   ConflictException,
   NotFoundException,
   OnModuleInit,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -55,6 +56,15 @@ export class AuthService implements OnModuleInit {
   }
 
   async login(dto: LoginDto) {
+    // 1. Verify CAPTCHA
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY || '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe';
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${dto.captchaToken}`;
+    const captchaRes = await fetch(verifyUrl, { method: 'POST' });
+    const captchaData = await captchaRes.json();
+    if (!captchaData.success) {
+      throw new BadRequestException('Invalid CAPTCHA token');
+    }
+
     const user = await this.userRepo.findOne({ where: { email: dto.email } });
     if (!user) throw new UnauthorizedException('Invalid credentials');
 

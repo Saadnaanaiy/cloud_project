@@ -20,6 +20,9 @@ FROM node:24-alpine
 
 WORKDIR /app
 
+# Create a non-root user for security (required by K8s PodSecurityStandards)
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
@@ -29,7 +32,13 @@ RUN npm ci --only=production
 # Copy the built application from the builder stage
 COPY --from=builder /app/dist ./dist
 
-# Expose the application port
+# Change ownership to the non-root user
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose the application port (configurable via PORT env var, default 3001)
 EXPOSE 3001
 
 # Start the application

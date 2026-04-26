@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLang } from '../context/LanguageContext';
 import toast from 'react-hot-toast';
 import { Lock, Mail, Eye, EyeOff, Users } from 'lucide-react';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 const LoginPage: React.FC = () => {
   const { login } = useAuth();
@@ -13,17 +14,25 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!captchaToken) {
+      toast.error('Please complete the CAPTCHA');
+      return;
+    }
     setLoading(true);
     try {
-      await login(email, password);
+      await login(email, password, captchaToken);
       toast.success('Welcome back!');
       navigate('/');
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Invalid credentials. Please try again.';
       toast.error(Array.isArray(msg) ? msg.join(', ') : msg);
+      if (recaptchaRef.current) recaptchaRef.current.reset();
+      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -77,6 +86,15 @@ const LoginPage: React.FC = () => {
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+              <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'}
+                onChange={(token) => setCaptchaToken(token)}
+                theme="dark"
+              />
             </div>
 
             <button type="submit" className="btn btn-primary auth-btn" disabled={loading}
