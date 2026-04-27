@@ -1,8 +1,7 @@
 # ============================================================
-# Backend NodePort — Expose API externally for the frontend
+# Backend External Service — Expose API publicly
 # ============================================================
-# The frontend (running in the browser) needs to reach the backend
-# from outside the cluster. This NodePort exposes it at localhost:30001.
+# In GKE this LoadBalancer receives a public external IP.
 # ============================================================
 apiVersion: v1
 kind: Service
@@ -17,7 +16,7 @@ spec:
   selector:
     app: backend
   ports:
-    - port: 30001
+    - port: 80
       targetPort: 3001
       protocol: TCP
       name: http

@@ -26,9 +26,9 @@ spec:
     spec:
       containers:
         - name: backend
-          # Local image — built with: docker build -t employee-platform/backend:latest ./backend
-          image: employee-platform/backend:latest
-          imagePullPolicy: Never   # Use locally-built image (Docker Desktop)
+          # GKE image from Artifact Registry
+          image: europe-west1-docker.pkg.dev/cloudappproject-494314/dev-employee-platform/backend:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3001
               name: http

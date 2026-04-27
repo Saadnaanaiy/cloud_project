@@ -14,6 +14,11 @@ grafana:
   service:
     type: NodePort
     nodePort: 30300
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      searchNamespace: ALL
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
@@ -77,3 +82,40 @@ kubeStateMetrics:
     limits:
       cpu: 100m
       memory: 128Mi
+
+# ─── Custom Alert Rules ────────────────────────────────────
+additionalPrometheusRulesMap:
+  employee-platform-alerts:
+    groups:
+      - name: employee-platform
+        rules:
+          - alert: BackendHigh5xxRate
+            expr: |
+              sum(rate(nginx_ingress_controller_requests{namespace="employee-platform",status=~"5..",host="api.employee-platform.example"}[5m]))
+              /
+              sum(rate(nginx_ingress_controller_requests{namespace="employee-platform",host="api.employee-platform.example"}[5m])) > 0.05
+            for: 10m
+            labels:
+              severity: warning
+              service: backend
+            annotations:
+              summary: "Backend 5xx error ratio is above 5%"
+              description: "The API ingress is returning too many server errors for 10 minutes."
+
+          - alert: PodCrashLooping
+            expr: max_over_time(kube_pod_container_status_waiting_reason{namespace="employee-platform",reason="CrashLoopBackOff"}[5m]) > 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "CrashLoopBackOff detected"
+              description: "One or more containers in employee-platform are crash-looping."
+
+          - alert: NodeHighCPU
+            expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+            for: 10m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Node CPU usage is above 85%"
+              description: "A Kubernetes node has sustained high CPU usage for 10 minutes."

@@ -2,8 +2,10 @@
 # CI Pipeline — Build, Lint, Test & Push Docker Images
 # ============================================================
 # Triggered on push/PR to main branch.
-# Builds Docker images and pushes to GitHub Container Registry
-# (free for public repos, 500MB free for private repos).
+# Builds Docker images and pushes to Google Artifact Registry.
+# Requires repository secrets:
+# - GCP_WORKLOAD_IDENTITY_PROVIDER
+# - GCP_SERVICE_ACCOUNT_EMAIL
 # ============================================================
 name: CI — Build & Test
 
@@ -14,9 +16,11 @@ on:
     branches: [main]
 
 env:
-  REGISTRY: ghcr.io
-  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
-  FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend
+  GAR_REGION: europe-west1
+  GCP_PROJECT_ID: cloudappproject-494314
+  GAR_REPOSITORY: dev-employee-platform
+  BACKEND_IMAGE: europe-west1-docker.pkg.dev/cloudappproject-494314/dev-employee-platform/backend
+  FRONTEND_IMAGE: europe-west1-docker.pkg.dev/cloudappproject-494314/dev-employee-platform/frontend
 
 jobs:
   # ─── Check Backend ─────────────────────────────────
@@ -72,18 +76,23 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
-      packages: write
+      id-token: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Setup gcloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GAR_REGION }}-docker.pkg.dev --quiet
 
       - name: Extract commit SHA (short)
         id: vars
@@ -104,7 +113,7 @@ jobs:
           context: ./frontend
           push: true
           build-args: |
-            VITE_API_URL=http://localhost:30001
+            VITE_API_URL=https://api.employee-platform.example
             VITE_RECAPTCHA_SITE_KEY=6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI
           tags: |
             ${{ env.FRONTEND_IMAGE }}:latest
@@ -118,19 +127,24 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
-      packages: read
+      id-token: write
       security-events: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Setup gcloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GAR_REGION }}-docker.pkg.dev --quiet
 
       - name: Scan Backend image with Trivy
         uses: aquasecurity/trivy-action@master

@@ -7,7 +7,8 @@
 .PHONY: help build up down logs backend-logs frontend-logs db-logs \
         tf-init tf-plan tf-apply tf-destroy \
         k8s-build k8s-namespace k8s-config k8s-deploy k8s-delete \
-        k8s-status k8s-logs-backend k8s-logs-frontend k8s-logs-mysql k8s-restart \
+	k8s-status k8s-logs-backend k8s-logs-frontend k8s-logs-mysql k8s-restart \
+	k8s-gke-edge k8s-deploy-gke k8s-deploy-gke-secure k8s-external-secrets-install k8s-external-secrets-apply \
         lint-backend lint-frontend test-backend scan-images
 
 # ─── Default ───────────────────────────────────────────────
@@ -123,13 +124,59 @@ k8s-logs-mysql: ## Show MySQL pod logs
 k8s-restart: ## Restart all deployments
 	kubectl rollout restart deployment -n employee-platform
 
+k8s-gke-edge: ## Apply GKE edge resources (CDN + cert + ingress)
+	kubectl apply -f k8s/12-frontend-backendconfig.yaml
+	kubectl apply -f k8s/10-managed-certificate.yaml
+	kubectl apply -f k8s/11-ingress.yaml
+
+k8s-deploy-gke: ## Deploy app to GKE (without local NodePort assumptions)
+	kubectl apply -f k8s/00-namespace.yaml
+	kubectl apply -f k8s/01-configmap.yaml
+	kubectl apply -f k8s/02-secret.yaml
+	kubectl apply -f k8s/03-mysql.yaml
+	kubectl apply -f k8s/12-frontend-backendconfig.yaml
+	kubectl apply -f k8s/04-backend.yaml
+	kubectl apply -f k8s/05-frontend.yaml
+	kubectl apply -f k8s/07-hpa.yaml
+	kubectl apply -f k8s/09-network-policy.yaml
+	kubectl apply -f k8s/10-managed-certificate.yaml
+	kubectl apply -f k8s/11-ingress.yaml
+
+k8s-external-secrets-install: ## Install External Secrets Operator on cluster
+	helm repo add external-secrets https://charts.external-secrets.io
+	helm repo update
+	helm upgrade --install external-secrets external-secrets/external-secrets \
+	  --namespace external-secrets --create-namespace
+
+k8s-external-secrets-apply: ## Apply GCP Secret Manager integration manifests
+	kubectl apply -f k8s/13-external-secrets-serviceaccount.yaml
+	kubectl apply -f k8s/14-secretstore-gcp.yaml
+	kubectl apply -f k8s/15-externalsecret-employee-platform.yaml
+
+k8s-deploy-gke-secure: ## Deploy to GKE using External Secrets (no static Kubernetes Secret)
+	kubectl apply -f k8s/00-namespace.yaml
+	kubectl apply -f k8s/01-configmap.yaml
+	$(MAKE) k8s-external-secrets-install
+	kubectl apply -f k8s/13-external-secrets-serviceaccount.yaml
+	kubectl apply -f k8s/14-secretstore-gcp.yaml
+	kubectl apply -f k8s/15-externalsecret-employee-platform.yaml
+	kubectl apply -f k8s/03-mysql.yaml
+	kubectl apply -f k8s/12-frontend-backendconfig.yaml
+	kubectl apply -f k8s/04-backend.yaml
+	kubectl apply -f k8s/05-frontend.yaml
+	kubectl apply -f k8s/07-hpa.yaml
+	kubectl apply -f k8s/09-network-policy.yaml
+	kubectl apply -f k8s/10-managed-certificate.yaml
+	kubectl apply -f k8s/11-ingress.yaml
+
 # ─── Monitoring (Helm) ─────────────────────────────────────
 monitoring-install: ## Install Prometheus + Grafana stack
 	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 	helm repo update
-	helm install monitoring prometheus-community/kube-prometheus-stack \
+	helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
 	  --namespace monitoring --create-namespace \
 	  -f monitoring/values.yaml
+	kubectl apply -f monitoring/grafana-dashboard.yaml
 	@echo ""
 	@echo "✅ Monitoring installed!"
 	@echo "   Grafana : http://localhost:30300"

@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: employee-platform-ingress
+  namespace: employee-platform
+  annotations:
+    kubernetes.io/ingress.class: gce
+    networking.gke.io/managed-certificates: employee-platform-cert
+spec:
+  rules:
+    - host: app.employee-platform.example
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
+    - host: api.employee-platform.example
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 3001

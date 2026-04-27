@@ -1,0 +1,93 @@
+name: CD - Deploy To GKE
+
+on:
+  workflow_run:
+    workflows: ["CI — Build & Test"]
+    types: [completed]
+  workflow_dispatch:
+
+env:
+  GAR_REGION: europe-west1
+  GCP_PROJECT_ID: cloudappproject-494314
+  GKE_CLUSTER: employee-gke
+  GKE_REGION: europe-west1
+  BACKEND_IMAGE: europe-west1-docker.pkg.dev/cloudappproject-494314/dev-employee-platform/backend
+  FRONTEND_IMAGE: europe-west1-docker.pkg.dev/cloudappproject-494314/dev-employee-platform/frontend
+
+jobs:
+  deploy:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Setup gcloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Configure kubectl for GKE
+        run: |
+          gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} \
+            --region ${{ env.GKE_REGION }} \
+            --project ${{ env.GCP_PROJECT_ID }}
+
+      - name: Compute deployment tag
+        id: vars
+        run: echo "sha_short=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Install External Secrets Operator
+        run: |
+          helm repo add external-secrets https://charts.external-secrets.io
+          helm repo update
+          helm upgrade --install external-secrets external-secrets/external-secrets \
+            --namespace external-secrets --create-namespace
+          kubectl rollout status deployment/external-secrets -n external-secrets --timeout=240s
+
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f k8s/00-namespace.yaml
+          kubectl apply -f k8s/01-configmap.yaml
+          kubectl apply -f k8s/13-external-secrets-serviceaccount.yaml
+          kubectl apply -f k8s/14-secretstore-gcp.yaml
+          kubectl apply -f k8s/15-externalsecret-employee-platform.yaml
+          kubectl apply -f k8s/03-mysql.yaml
+          kubectl apply -f k8s/12-frontend-backendconfig.yaml
+          kubectl apply -f k8s/04-backend.yaml
+          kubectl apply -f k8s/05-frontend.yaml
+          kubectl apply -f k8s/07-hpa.yaml
+          kubectl apply -f k8s/09-network-policy.yaml
+          kubectl apply -f k8s/10-managed-certificate.yaml
+          kubectl apply -f k8s/11-ingress.yaml
+
+      - name: Ensure monitoring dashboard config
+        run: kubectl apply -f monitoring/grafana-dashboard.yaml
+
+      - name: Set image tags to current commit
+        run: |
+          kubectl set image deployment/backend backend=${{ env.BACKEND_IMAGE }}:${{ steps.vars.outputs.sha_short }} -n employee-platform
+          kubectl set image deployment/frontend frontend=${{ env.FRONTEND_IMAGE }}:${{ steps.vars.outputs.sha_short }} -n employee-platform
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/backend -n employee-platform --timeout=300s
+          kubectl rollout status deployment/frontend -n employee-platform --timeout=300s
+
+      - name: Show ingress status
+        run: kubectl get ingress -n employee-platform

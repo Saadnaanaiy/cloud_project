@@ -14,6 +14,6 @@ data:
   DB_USERNAME: "root"
   DB_NAME: "employee_db"
   PORT: "3001"
-  NODE_ENV: "development"
+  NODE_ENV: "production"
   JWT_EXPIRES_IN: "1h"
-  FRONTEND_URL: "http://localhost:30080"
+  FRONTEND_URL: "https://app.employee-platform.example"

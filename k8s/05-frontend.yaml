@@ -26,10 +26,9 @@ spec:
     spec:
       containers:
         - name: frontend
-          # Local image — built with:
-          # docker build -t employee-platform/frontend:latest --build-arg VITE_API_URL=http://localhost:30001 ./frontend
-          image: employee-platform/frontend:latest
-          imagePullPolicy: Never   # Use locally-built image (Docker Desktop)
+          # GKE image from Artifact Registry
+          image: europe-west1-docker.pkg.dev/cloudappproject-494314/dev-employee-platform/frontend:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
               name: http
@@ -61,13 +60,15 @@ metadata:
   labels:
     app: frontend
     app.kubernetes.io/part-of: employee-platform
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
+    cloud.google.com/backend-config: '{"default": "frontend-backendconfig"}'
 spec:
-  # LoadBalancer automatically maps to localhost in Docker Desktop
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: frontend
   ports:
-    - port: 30080
+    - port: 80
       targetPort: 80
       protocol: TCP
       name: http
