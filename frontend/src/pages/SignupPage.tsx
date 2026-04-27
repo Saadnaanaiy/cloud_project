@@ -7,7 +7,7 @@ import { Lock, Mail, Eye, EyeOff, Users, User, ChevronDown } from 'lucide-react'
 
 const roleOptions = [
   { value: 'hr', label: 'HR Manager' },
-  { value: 'manager', label: 'Department Manager' },
+  { value: 'employee', label: 'Employee' },
   { value: 'admin', label: 'Administrator' },
 ];
 

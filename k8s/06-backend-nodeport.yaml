@@ -1,0 +1,23 @@
+# ============================================================
+# Backend NodePort — Expose API externally for the frontend
+# ============================================================
+# The frontend (running in the browser) needs to reach the backend
+# from outside the cluster. This NodePort exposes it at localhost:30001.
+# ============================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-external
+  namespace: employee-platform
+  labels:
+    app: backend
+    app.kubernetes.io/part-of: employee-platform
+spec:
+  type: LoadBalancer
+  selector:
+    app: backend
+  ports:
+    - port: 30001
+      targetPort: 3001
+      protocol: TCP
+      name: http

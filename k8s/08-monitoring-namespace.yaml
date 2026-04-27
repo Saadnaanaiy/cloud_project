@@ -1,0 +1,26 @@
+# ============================================================
+# Monitoring Stack — Prometheus + Grafana on Docker Desktop K8s
+# ============================================================
+# Uses kube-prometheus-stack Helm chart (free & open source).
+# Installs: Prometheus, Grafana, AlertManager, node-exporter.
+# ============================================================
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    name: monitoring
+---
+# After installing via Helm (see README), you can port-forward:
+#   kubectl port-forward svc/monitoring-grafana 8080:80 -n monitoring
+#
+# Default Grafana credentials:
+#   Username: admin
+#   Password: prom-operator
+#
+# Pre-installed dashboards include:
+#   - Kubernetes Cluster Overview
+#   - Node Exporter / Nodes
+#   - Pods Overview
+#   - Persistent Volumes

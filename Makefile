@@ -5,7 +5,9 @@
 # ============================================================
 
 .PHONY: help build up down logs backend-logs frontend-logs db-logs \
-        tf-init tf-plan tf-apply tf-destroy k8s-apply k8s-delete \
+        tf-init tf-plan tf-apply tf-destroy \
+        k8s-build k8s-namespace k8s-config k8s-deploy k8s-delete \
+        k8s-status k8s-logs-backend k8s-logs-frontend k8s-logs-mysql k8s-restart \
         lint-backend lint-frontend test-backend scan-images
 
 # ─── Default ───────────────────────────────────────────────
@@ -68,7 +70,14 @@ tf-apply: ## Apply Terraform changes
 tf-destroy: ## Destroy Terraform infrastructure
 	cd infrastructure && terraform destroy -var-file="terraform.tfvars"
 
-# ─── Kubernetes ────────────────────────────────────────────
+# ─── Docker Desktop Kubernetes ─────────────────────────────
+k8s-build: ## Build Docker images for K8s (local)
+	docker build -t employee-platform/backend:latest ./backend
+	docker build -t employee-platform/frontend:latest \
+	  --build-arg VITE_API_URL=http://localhost:30001 \
+	  --build-arg VITE_RECAPTCHA_SITE_KEY=6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI \
+	  ./frontend
+
 k8s-namespace: ## Create Kubernetes namespace
 	kubectl apply -f k8s/00-namespace.yaml
 
@@ -76,14 +85,31 @@ k8s-config: ## Apply ConfigMap and Secret
 	kubectl apply -f k8s/01-configmap.yaml
 	kubectl apply -f k8s/02-secret.yaml
 
-k8s-deploy: ## Apply all Kubernetes manifests
-	kubectl apply -f k8s/
+k8s-deploy: ## Deploy everything to K8s (full pipeline)
+	@echo "🔨 Building Docker images..."
+	$(MAKE) k8s-build
+	@echo "📦 Creating namespace..."
+	kubectl apply -f k8s/00-namespace.yaml
+	@echo "⚙️  Applying config and secrets..."
+	kubectl apply -f k8s/01-configmap.yaml
+	kubectl apply -f k8s/02-secret.yaml
+	@echo "🚀 Deploying services..."
+	kubectl apply -f k8s/03-mysql.yaml
+	kubectl apply -f k8s/04-backend.yaml
+	kubectl apply -f k8s/05-frontend.yaml
+	kubectl apply -f k8s/06-backend-nodeport.yaml
+	kubectl apply -f k8s/07-hpa.yaml
+	@echo ""
+	@echo "✅ Deployed! Access the app:"
+	@echo "   Frontend : http://localhost:30080"
+	@echo "   Backend  : http://localhost:30001"
+	@echo "   Swagger  : http://localhost:30001/api"
 
 k8s-delete: ## Delete all Kubernetes resources
-	kubectl delete -f k8s/
+	kubectl delete -f k8s/ --ignore-not-found
 
 k8s-status: ## Show K8s pod status
-	kubectl get pods -n employee-platform
+	kubectl get all -n employee-platform
 
 k8s-logs-backend: ## Show backend pod logs
 	kubectl logs -l app=backend -n employee-platform --tail=100 -f
@@ -91,19 +117,39 @@ k8s-logs-backend: ## Show backend pod logs
 k8s-logs-frontend: ## Show frontend pod logs
 	kubectl logs -l app=frontend -n employee-platform --tail=100 -f
 
+k8s-logs-mysql: ## Show MySQL pod logs
+	kubectl logs -l app=mysql -n employee-platform --tail=100 -f
+
+k8s-restart: ## Restart all deployments
+	kubectl rollout restart deployment -n employee-platform
+
 # ─── Monitoring (Helm) ─────────────────────────────────────
-monitoring-install: ## Install kube-prometheus-stack
+monitoring-install: ## Install Prometheus + Grafana stack
 	helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 	helm repo update
 	helm install monitoring prometheus-community/kube-prometheus-stack \
-	  --namespace monitoring --create-namespace
+	  --namespace monitoring --create-namespace \
+	  -f monitoring/values.yaml
+	@echo ""
+	@echo "✅ Monitoring installed!"
+	@echo "   Grafana : http://localhost:30300"
+	@echo "   Login   : admin / admin123"
 
-monitoring-portforward: ## Port-forward Grafana locally
+monitoring-uninstall: ## Uninstall monitoring stack
+	helm uninstall monitoring -n monitoring
+	kubectl delete namespace monitoring --ignore-not-found
+
+monitoring-portforward: ## Port-forward Grafana locally (alternative)
 	kubectl port-forward svc/monitoring-grafana 8080:80 -n monitoring
 
+# ─── Ansible ───────────────────────────────────────────────
+ansible-setup: ## Run Ansible environment check playbook
+	cd ansible && ansible-playbook -i inventory.ini setup-env.yml
+
 # ─── Load Testing ──────────────────────────────────────────
-load-test-local: ## Run k6 load test against local backend
+load-test-local: ## Run k6 load test against docker-compose backend
 	k6 run --env API_URL=http://localhost:3001 tests/load-test.js
 
-load-test-k8s: ## Run k6 load test against K8s ingress
-	k6 run --env API_URL=https://api.yourdomain.com tests/load-test.js
+load-test-k8s: ## Run k6 load test against K8s backend
+	k6 run --env API_URL=http://localhost:30001 tests/load-test.js
+

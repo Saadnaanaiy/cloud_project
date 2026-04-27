@@ -1,0 +1,114 @@
+# ============================================================
+# Ansible Playbook — Setup Development Environment
+# ============================================================
+# This playbook prepares the local machine (or a bastion host)
+# with all the tools needed to operate a Kubernetes cluster.
+# ============================================================
+---
+- name: Setup Cloud Native Development Environment
+  hosts: local
+  become: false
+  vars:
+    project_name: employee-platform
+    k8s_namespace: employee-platform
+
+  tasks:
+    # ─── Verify Prerequisites ──────────────────────────────
+    - name: Check if Docker is installed
+      command: docker --version
+      register: docker_version
+      changed_when: false
+      failed_when: docker_version.rc != 0
+
+    - name: Display Docker version
+      debug:
+        msg: "Docker: {{ docker_version.stdout }}"
+
+    - name: Check if kubectl is installed
+      command: kubectl version --client --short
+      register: kubectl_version
+      changed_when: false
+      failed_when: kubectl_version.rc != 0
+
+    - name: Display kubectl version
+      debug:
+        msg: "kubectl: {{ kubectl_version.stdout }}"
+
+    - name: Check if Kubernetes cluster is reachable
+      command: kubectl cluster-info
+      register: cluster_info
+      changed_when: false
+      failed_when: cluster_info.rc != 0
+
+    - name: Display cluster info
+      debug:
+        msg: "Cluster is reachable"
+
+    # ─── Verify Kubernetes Context ─────────────────────────
+    - name: Get current kubectl context
+      command: kubectl config current-context
+      register: kube_context
+      changed_when: false
+
+    - name: Display current context
+      debug:
+        msg: "Current K8s context: {{ kube_context.stdout }}"
+
+    - name: Warn if not using docker-desktop context
+      debug:
+        msg: "⚠️  WARNING: You are NOT on docker-desktop context. Current: {{ kube_context.stdout }}"
+      when: "'docker-desktop' not in kube_context.stdout"
+
+    # ─── Setup Namespace ───────────────────────────────────
+    - name: Create Kubernetes namespace
+      command: kubectl apply -f ../k8s/00-namespace.yaml
+      register: ns_result
+      changed_when: "'created' in ns_result.stdout"
+
+    - name: Display namespace status
+      debug:
+        msg: "{{ ns_result.stdout }}"
+
+    # ─── Verify Docker Images ──────────────────────────────
+    - name: Check if backend Docker image exists
+      command: docker images -q employee-platform/backend:latest
+      register: backend_image
+      changed_when: false
+
+    - name: Check if frontend Docker image exists
+      command: docker images -q employee-platform/frontend:latest
+      register: frontend_image
+      changed_when: false
+
+    - name: Display image status
+      debug:
+        msg: >
+          Backend image: {{ 'EXISTS ✅' if backend_image.stdout else 'MISSING ❌ — Run: make k8s-build' }}
+          Frontend image: {{ 'EXISTS ✅' if frontend_image.stdout else 'MISSING ❌ — Run: make k8s-build' }}
+
+    # ─── Health Summary ────────────────────────────────────
+    - name: Get pods in namespace
+      command: kubectl get pods -n {{ k8s_namespace }} --no-headers
+      register: pods_status
+      changed_when: false
+      failed_when: false
+
+    - name: Display pod status
+      debug:
+        msg: "{{ pods_status.stdout_lines | default(['No pods found — deploy with: make k8s-deploy']) }}"
+
+    - name: Final summary
+      debug:
+        msg:
+          - "═══════════════════════════════════════"
+          - "  ✅ Environment Setup Complete"
+          - "═══════════════════════════════════════"
+          - "  Docker:     {{ docker_version.stdout }}"
+          - "  kubectl:    {{ kubectl_version.stdout }}"
+          - "  Context:    {{ kube_context.stdout }}"
+          - "  Namespace:  {{ k8s_namespace }}"
+          - "═══════════════════════════════════════"
+          - "  Next steps:"
+          - "    1. make k8s-build   (build images)"
+          - "    2. make k8s-deploy  (deploy to K8s)"
+          - "═══════════════════════════════════════"

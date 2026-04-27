@@ -104,7 +104,7 @@ export class AuthService implements OnModuleInit {
       sub: user.id,
       email: user.email,
       role: user.role,
-      name: user.name,
+      name: user.name
     };
     return {
       access_token: this.jwtService.sign(payload),

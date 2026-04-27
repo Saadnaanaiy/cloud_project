@@ -1,0 +1,79 @@
+# ============================================================
+# Prometheus Custom Values for kube-prometheus-stack
+# ============================================================
+# Lightweight config optimized for Docker Desktop K8s.
+# Install with:
+#   helm install monitoring prometheus-community/kube-prometheus-stack \
+#     --namespace monitoring --create-namespace \
+#     -f monitoring/values.yaml
+# ============================================================
+
+# ─── Grafana ───────────────────────────────────────────────
+grafana:
+  adminPassword: admin123
+  service:
+    type: NodePort
+    nodePort: 30300
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+
+# ─── Prometheus ────────────────────────────────────────────
+prometheus:
+  prometheusSpec:
+    # Reduce resource usage for Docker Desktop
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    retention: 7d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 2Gi
+
+# ─── AlertManager ──────────────────────────────────────────
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+
+# ─── Node Exporter (lightweight) ──────────────────────────
+nodeExporter:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+# ─── Kube State Metrics ───────────────────────────────────
+kubeStateMetrics:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi

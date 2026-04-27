@@ -1,0 +1,19 @@
+# ============================================================
+# ConfigMap — Non-sensitive environment variables
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: employee-platform-config
+  namespace: employee-platform
+  labels:
+    app.kubernetes.io/part-of: employee-platform
+data:
+  DB_HOST: "mysql"
+  DB_PORT: "3306"
+  DB_USERNAME: "root"
+  DB_NAME: "employee_db"
+  PORT: "3001"
+  NODE_ENV: "development"
+  JWT_EXPIRES_IN: "1h"
+  FRONTEND_URL: "http://localhost:30080"
