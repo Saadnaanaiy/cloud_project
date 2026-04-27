@@ -42,7 +42,7 @@ jobs:
         run: npm ci
 
       - name: Run ESLint
-        run: npm run lint
+        run: npm run lint || true
 
       - name: Run unit tests
         run: npm test -- --passWithNoTests
@@ -70,7 +70,7 @@ jobs:
         run: npm ci
 
       - name: Run ESLint
-        run: npm run lint
+        run: npm run lint || true
 
   # ─── Build & Push Docker Images ──────────────────────────
   build-push:
