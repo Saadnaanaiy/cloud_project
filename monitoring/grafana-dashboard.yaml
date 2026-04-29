@@ -38,102 +38,193 @@ data:
       "liveNow": false,
       "panels": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
           "fieldConfig": {
             "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
+              "color": { "mode": "palette-classic" },
+              "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 10, "gradientMode": "area", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "auto", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "off" } },
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] },
+              "unit": "percent"
+            }
+          },
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
+          "id": 1,
+          "options": { "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "single", "sort": "none" } },
+          "targets": [
+            {
+              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"employee-platform\",container!=\"\"}[5m])) * 100",
+              "refId": "A"
+            }
+          ],
+          "title": "🚀 App CPU Load (Dynamic)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "mappings": [],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
-                  {"color": "green", "value": null},
-                  {"color": "orange", "value": 60},
-                  {"color": "red", "value": 85}
+                  { "color": "blue", "value": null },
+                  { "color": "yellow", "value": 70 },
+                  { "color": "red", "value": 90 }
                 ]
               },
-              "unit": "percent"
-            },
-            "overrides": []
-          },
-          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
-          "id": 1,
-          "options": {
-            "reduceOptions": {
-              "calcs": ["lastNotNull"],
-              "fields": "",
-              "values": false
+              "unit": "decbytes"
             }
+          },
+          "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+          "id": 4,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
           },
           "targets": [
             {
-              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"employee-platform\",container!=\"\",pod!~\".*mysql.*\"}[5m])) * 100",
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"employee-platform\",container!=\"\"})",
               "refId": "A"
             }
           ],
-          "title": "App CPU Usage (%)",
+          "title": "🧠 RAM Consumption",
+          "type": "gauge"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "green", "value": 1 }
+                ]
+              }
+            }
+          },
+          "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+          "id": 2,
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false } },
+          "targets": [
+            {
+              "expr": "sum(kube_pod_status_ready{namespace=\"employee-platform\",condition=\"true\"})",
+              "refId": "A"
+            }
+          ],
+          "title": "🛡️ Healthy Pods",
           "type": "stat"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
           "fieldConfig": {
-            "defaults": {
-              "color": {"mode": "palette-classic"}
-            },
-            "overrides": []
+            "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] } }
           },
-          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
-          "id": 2,
+          "gridPos": { "h": 10, "w": 8, "x": 0, "y": 8 },
+          "id": 5,
           "targets": [
             {
-              "expr": "sum by (deployment) (kube_deployment_status_replicas_available{namespace=\"employee-platform\"})",
-              "legendFormat": "{{deployment}}",
+              "expr": "sum by (pod) (kube_pod_container_status_restarts_total{namespace=\"employee-platform\"})",
+              "legendFormat": "{{pod}} restarts",
               "refId": "A"
             }
           ],
-          "title": "Available Replicas",
+          "title": "⚠️ Pod Stability (Restarts)",
           "type": "timeseries"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
+          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
           "fieldConfig": {
-            "defaults": {
-              "color": {"mode": "palette-classic"}
-            },
-            "overrides": []
+            "defaults": { "color": { "mode": "palette-classic" }, "unit": "none" }
           },
-          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
-          "id": 3,
+          "gridPos": { "h": 10, "w": 4, "x": 8, "y": 8 },
+          "id": 6,
           "targets": [
             {
-              "expr": "sum by (status) (rate(nginx_ingress_controller_requests{namespace=\"employee-platform\",host=~\"app.employee-platform.example|api.employee-platform.example\"}[5m]))",
-              "legendFormat": "status {{status}}",
+              "expr": "count(kube_pod_info{namespace=\"employee-platform\",pod=~\"mysql.*\"})",
               "refId": "A"
             }
           ],
-          "title": "Ingress Request Rate by Status",
+          "title": "🗄️ MySQL Pods",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "fieldConfig": {
+            "defaults": { "color": { "mode": "palette-classic" }, "unit": "Bps" }
+          },
+          "gridPos": { "h": 10, "w": 12, "x": 12, "y": 8 },
+          "id": 7,
+          "targets": [
+            {
+              "expr": "sum(rate(container_network_receive_bytes_total{namespace=\"employee-platform\"}[5m]))",
+              "legendFormat": "Inbound",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(rate(container_network_transmit_bytes_total{namespace=\"employee-platform\"}[5m]))",
+              "legendFormat": "Outbound",
+              "refId": "B"
+            }
+          ],
+          "title": "📡 Network Throughput",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": { "gradientMode": "opacity", "lineWidth": 2 },
+              "unit": "Bps"
+            }
+          },
+          "gridPos": { "h": 10, "w": 24, "x": 0, "y": 18 },
+          "id": 3,
+          "targets": [
+            {
+              "expr": "sum by (pod) (rate(container_network_receive_bytes_total{namespace=\"employee-platform\",pod=~\"backend.*|frontend.*\"}[5m]))",
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ],
+          "title": "🌐 App Network Traffic (Real-time)",
           "type": "timeseries"
         }
       ],
-      "refresh": "30s",
+      "refresh": "10s",
       "schemaVersion": 39,
       "style": "dark",
-      "tags": ["employee-platform"],
-      "templating": {"list": []},
-      "time": {"from": "now-6h", "to": "now"},
+      "tags": ["employee-platform", "premium"],
+      "templating": {
+        "list": [
+          {
+            "current": { "selected": true, "text": "Prometheus", "value": "prometheus" },
+            "hide": 0,
+            "includeAll": false,
+            "label": "Datasource",
+            "multi": false,
+            "name": "DS_PROMETHEUS",
+            "options": [],
+            "query": "prometheus",
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "type": "datasource"
+          }
+        ]
+      },
+      "time": { "from": "now-1h", "to": "now" },
       "timepicker": {},
       "timezone": "",
-      "title": "Employee Platform Overview",
-      "uid": "employee-platform-overview",
-      "version": 1,
+      "title": "💎 Employee Platform - Premium Dashboard",
+      "uid": "employee-platform-premium",
+      "version": 2,
       "weekStart": ""
     }

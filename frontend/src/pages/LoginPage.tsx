@@ -29,7 +29,17 @@ const LoginPage: React.FC = () => {
       toast.success('Welcome back!');
       navigate('/');
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Invalid credentials. Please try again.';
+      console.error('Login error:', err);
+      let msg = 'Invalid credentials. Please try again.';
+      
+      if (err.response) {
+        msg = err.response.data?.message || msg;
+      } else if (err.request) {
+        msg = 'No response from server. Please check your internet connection or API URL.';
+      } else {
+        msg = err.message || 'An unexpected error occurred.';
+      }
+
       toast.error(Array.isArray(msg) ? msg.join(', ') : msg);
       if (recaptchaRef.current) recaptchaRef.current.reset();
       setCaptchaToken(null);

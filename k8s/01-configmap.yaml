@@ -11,9 +11,9 @@ metadata:
 data:
   DB_HOST: "mysql"
   DB_PORT: "3306"
-  DB_USERNAME: "root"
+  DB_USERNAME: "employee_user"
   DB_NAME: "employee_db"
   PORT: "3001"
-  NODE_ENV: "production"
+  NODE_ENV: "development"
   JWT_EXPIRES_IN: "1h"
   FRONTEND_URL: "https://app.saad-cloud.xyz"

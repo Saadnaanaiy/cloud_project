@@ -17,6 +17,11 @@ export class HealthController {
     };
   }
 
+  @Get('/')
+  root() {
+    return this.check();
+  }
+
   @Get('ready')
   @ApiOperation({ summary: 'Readiness probe for Kubernetes' })
   async ready() {

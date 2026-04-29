@@ -10,6 +10,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { MessagesService } from './messages.service';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @WebSocketGateway({
   cors: {
@@ -26,6 +27,7 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
   constructor(
     private messagesService: MessagesService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async handleConnection(client: Socket) {
@@ -35,7 +37,8 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
         client.disconnect();
         return;
       }
-      const payload = this.jwtService.verify(token, { secret: process.env.JWT_SECRET || 'super-secret' });
+      const secret = this.configService.get<string>('JWT_SECRET', 'employee_secret_key_2026');
+      const payload = this.jwtService.verify(token, { secret });
       const userId = payload.sub;
       client.data = { userId, role: payload.role };
       
@@ -79,9 +82,10 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
 
     if (!senderId) return;
 
-    // Restrict sending to admin and hr only
-    const role = client.data.role;
-    if (role !== 'admin' && role !== 'hr' && role !== 'manager' && role !== 'ADMIN' && role !== 'HR' && role !== 'MANAGER') {
+    // Allow admin, hr, manager, and employee
+    const role = (client.data.role || '').toLowerCase();
+    const allowedRoles = ['admin', 'hr', 'manager', 'employee'];
+    if (!allowedRoles.includes(role)) {
       return;
     }
 
@@ -117,9 +121,10 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
     }
     if (!senderId) return;
 
-    // Restrict typing indicator to admin and hr only
-    const role = client.data.role;
-    if (role !== 'admin' && role !== 'hr' && role !== 'manager' && role !== 'ADMIN' && role !== 'HR' && role !== 'MANAGER') {
+    // Allow admin, hr, manager, and employee
+    const role = (client.data.role || '').toLowerCase();
+    const allowedRoles = ['admin', 'hr', 'manager', 'employee'];
+    if (!allowedRoles.includes(role)) {
       return;
     }
 

@@ -6,6 +6,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: gce
     networking.gke.io/managed-certificates: employee-platform-cert
+    kubernetes.io/ingress.global-static-ip-name: employee-platform-ip
 spec:
   rules:
     - host: app.saad-cloud.xyz
