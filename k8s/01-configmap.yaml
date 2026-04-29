@@ -16,4 +16,4 @@ data:
   PORT: "3001"
   NODE_ENV: "development"
   JWT_EXPIRES_IN: "1h"
-  FRONTEND_URL: "https://app.saad-cloud.xyz"
+  FRONTEND_URL: "http://app.saad-cloud.xyz,https://app.saad-cloud.xyz"
