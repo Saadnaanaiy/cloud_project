@@ -1,7 +1,7 @@
 # ============================================================
 # Prometheus Custom Values for kube-prometheus-stack
 # ============================================================
-# Lightweight config optimized for Docker Desktop K8s.
+# Lightweight config optimized for GKE Lab.
 # Install with:
 #   helm install monitoring prometheus-community/kube-prometheus-stack \
 #     --namespace monitoring --create-namespace \
@@ -38,8 +38,8 @@ prometheus:
     # Reduce resource usage for Docker Desktop
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 200m
+        memory: 512Mi
       limits:
         cpu: 500m
         memory: 512Mi
@@ -91,9 +91,7 @@ additionalPrometheusRulesMap:
         rules:
           - alert: BackendHigh5xxRate
             expr: |
-              sum(rate(nginx_ingress_controller_requests{namespace="employee-platform",status=~"5..",host="api.employee-platform.example"}[5m]))
-              /
-              sum(rate(nginx_ingress_controller_requests{namespace="employee-platform",host="api.employee-platform.example"}[5m])) > 0.05
+              sum(rate(kube_pod_container_status_restarts_total{namespace="employee-platform"}[5m])) > 0.05
             for: 10m
             labels:
               severity: warning

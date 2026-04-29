@@ -9,7 +9,7 @@ on:
 env:
   GAR_REGION: europe-west1
   GCP_PROJECT_ID: cloudappproject-494314
-  GKE_CLUSTER: employee-gke
+  GKE_CLUSTER: dev-cloud-native-employee-gke
   GKE_REGION: europe-west1
   BACKEND_IMAGE: europe-west1-docker.pkg.dev/cloudappproject-494314/dev-employee-platform/backend
   FRONTEND_IMAGE: europe-west1-docker.pkg.dev/cloudappproject-494314/dev-employee-platform/frontend

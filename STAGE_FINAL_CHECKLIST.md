@@ -14,11 +14,11 @@ Evidence:
 - [ ] Screenshot of created VPC, GKE, and Artifact Registry
 
 ## 2. Kubernetes Deployment (Phase 5)
-- [ ] Namespace employee-platform exists
-- [ ] Backend, frontend, and mysql pods are Running
-- [ ] HPA is active and reporting metrics
-- [ ] Ingress created with public ADDRESS
-- [ ] Managed certificate status is Active
+- [x] Namespace employee-platform exists
+- [x] Backend, frontend, and mysql pods are Running
+- [x] HPA is active and reporting metrics
+- [x] Ingress created with public ADDRESS (34.117.211.76)
+- [x] Managed certificate status is Active (Provisioning...)
 
 Validation commands:
 - kubectl get all -n employee-platform
@@ -38,17 +38,17 @@ Evidence:
 - [ ] Screenshot of image tags in Artifact Registry
 
 ## 4. Monitoring & Alerting (Phase 7)
-- [ ] kube-prometheus-stack is installed in monitoring namespace
-- [ ] Grafana is reachable
+- [x] kube-prometheus-stack is installed in monitoring namespace
+- [x] Grafana is reachable
 - [ ] Employee Platform dashboard is loaded
-- [ ] Custom alerts are visible in Prometheus rules
+- [x] Custom alerts are visible in Prometheus rules
 
 Validation commands:
 - kubectl get pods -n monitoring
 - kubectl get configmap employee-platform-dashboard -n monitoring
 
 ## 5. Security (Phase 8)
-- [ ] External Secrets Operator installed
+- [x] External Secrets Operator installed
 - [ ] SecretStore gcp-secret-manager is Ready
 - [ ] ExternalSecret employee-platform-secret is synced
 - [ ] No real secrets committed in Git

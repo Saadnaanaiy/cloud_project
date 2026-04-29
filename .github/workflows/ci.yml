@@ -113,7 +113,7 @@ jobs:
           context: ./frontend
           push: true
           build-args: |
-            VITE_API_URL=https://api.employee-platform.example
+            VITE_API_URL=https://api.saad-cloud.xyz
             VITE_RECAPTCHA_SITE_KEY=6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI
           tags: |
             ${{ env.FRONTEND_IMAGE }}:latest
