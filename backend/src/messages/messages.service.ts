@@ -84,7 +84,7 @@ export class MessagesService {
     }
 
     // If the user is admin or HR, they should see everyone in the system so they can start a chat
-    if (role === 'ADMIN' || role === 'HR' || role === 'admin' || role === 'hr') {
+    if (role === 'ADMIN' || role === 'HR' || role === 'MANAGER' || role === 'admin' || role === 'hr' || role === 'manager') {
       const allUsers = await this.usersRepository.find();
       for (const u of allUsers) {
         if (u.id !== userId && !contactsMap.has(u.id)) {
