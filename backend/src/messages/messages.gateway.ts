@@ -81,7 +81,7 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
 
     // Restrict sending to admin and hr only
     const role = client.data.role;
-    if (role !== 'admin' && role !== 'hr' && role !== 'ADMIN' && role !== 'HR') {
+    if (role !== 'admin' && role !== 'hr' && role !== 'manager' && role !== 'ADMIN' && role !== 'HR' && role !== 'MANAGER') {
       return;
     }
 
@@ -119,7 +119,7 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
 
     // Restrict typing indicator to admin and hr only
     const role = client.data.role;
-    if (role !== 'admin' && role !== 'hr' && role !== 'ADMIN' && role !== 'HR') {
+    if (role !== 'admin' && role !== 'hr' && role !== 'manager' && role !== 'ADMIN' && role !== 'HR' && role !== 'MANAGER') {
       return;
     }
 
